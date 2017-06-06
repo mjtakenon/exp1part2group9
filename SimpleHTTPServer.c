@@ -233,12 +233,32 @@ void exp1_check_file(exp1_info_type *info)
   pext = strstr(info->path, ".");
   if(pext != NULL && strcmp(pext, ".html") == 0){
     strcpy(info->type, "text/html");
+  }else if(pext != NULL && strcmp(pext, ".css") == 0){
+    strcpy(info->type, "text/css");
   }else if(pext != NULL && strcmp(pext, ".jpg") == 0){
     strcpy(info->type, "image/jpeg");
   }else if(pext != NULL && strcmp(pext, ".php") == 0){
     strcpy(info->type,"text/php");
   }else if(pext != NULL && strcmp(pext, ".mp4") == 0){
     strcpy(info->type, "video/mp4");
+  }else if(pext != NULL && strcmp(pext, ".png") == 0){
+    strcpy(info->type, "image/png");
+  }else if(pext != NULL && strcmp(pext, ".gif") == 0){
+    strcpy(info->type, "image/gif");
+  }else if(pext != NULL && strcmp(pext, ".js") == 0){
+    strcpy(info->type, "application/javascript");
+  }else if(pext != NULL && strcmp(pext, ".json") == 0){
+    strcpy(info->type, "application/json");
+  }else if(pext != NULL && strcmp(pext, ".xml") == 0){
+    strcpy(info->type, "application/xml");
+  }else if(pext != NULL && strcmp(pext, ".zip") == 0){
+    strcpy(info->type, "application/zip");
+  }else if(pext != NULL && strcmp(pext, ".pdf") == 0){
+    strcpy(info->type, "application/pdf");
+  }else if(pext != NULL && strcmp(pext, ".xml") == 0){
+    strcpy(info->type, "application/xml");
+  }else if(pext != NULL && strcmp(pext, ".mp3") == 0){
+    strcpy(info->type, "audio/mpeg");
   }
 }
 
