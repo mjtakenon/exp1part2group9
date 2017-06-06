@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<head>
+    <title>ajax test page</title>
+    <meta charset="utf-8"/>
+</head>
+<!--
+<script type="text/javascript" src="ajax.js">
+-->
+
+<body>
+    <script>
+        function getImage()
+        {
+            var xhr = new XMLHttpRequest();
+            // ハンドラの登録.
+            xhr.onreadystatechange = function ()
+            {
+                switch ( xhr.readyState ) 
+                {
+                    case 0:
+                        // 未初期化状態.
+                        console.log( 'uninitialized!' );
+                        break;
+                    case 1: // データ送信中.
+                        console.log( 'loading...' );
+                        break;
+                    case 2: // 応答待ち.
+                        console.log( 'loaded.' );
+                        break;
+                    case 3: // データ受信中.
+                        console.log( 'interactive... '+xhr.responseText.length+' bytes.' );
+                        break;
+                    case 4: // データ受信完了.
+                        if( xhr.status == 200 || xhr.status == 304 ) {
+                            var data = xhr.responseText; // responseXML もあり
+                            console.log( 'received\n' + data );
+                            add(data);
+                            //document.writeln(data);
+                        } else {
+                            // console.log( 'Failed. HttpStatus: '+xhr.statusText );
+                            document.writeln( 'Failed. HttpStatus: '+xhr.statusText );
+                        }
+                        break;
+                }
+            };
+
+            hostname = window.location.href.split("/");
+            
+            var host = "http://" + hostname[2] + "/getImage.php";
+            
+            console.log(host);
+            
+            xhr.open( 'get', host, false );
+            xhr.send();
+            
+            xhr.abort(); // 再利用する際にも abort() しないと再利用できないらしい.
+        }
+
+        function add(data)
+        {
+            var div_element = document.createElement("div");
+            div_element.innerHTML = data;
+            var parent_object = document.getElementById("images");
+            parent_object.appendChild(div_element);
+        }
+
+        function getRemain()
+        {
+            // 垂直スクロール量を取得する
+            var scrollTop = document.body.scrollTop || document.documentElement.scrollTop;
+
+            // 表示領域の高さを取得する
+            var clientHeight = document.body.clientHeight;
+
+            // スクロールバーで隠れた領域を含むコンテンツ領域の高さを取得する
+            var scrollHeight = document.body.scrollHeight;
+
+            // コンテンツ領域の底までの残り領域
+            var remain = document.documentElement.clientHeight - (scrollHeight - clientHeight - scrollTop);
+            return remain;
+        }
+
+        document.onmousedown = function (e)
+        {
+            var pos = document.body.scrollTop || document.documentElement.scrollTop;
+
+            getImage();
+            while(getRemain() > 0)
+            {
+                getImage();
+                scrollTo(0,pos);
+            }
+
+        }
+
+        window.onscroll = function()
+        {
+            var pos = document.body.scrollTop || document.documentElement.scrollTop;
+
+            while(getRemain() > 0)
+            {
+                getImage();
+                scrollTo(0,pos);
+            }
+        }
+        
+        function init()
+        {
+            while(getRemain() > 0)
+            {
+                getImage();
+                scrollTo(0,0);
+            }
+        }
+    </script>
+
+    <p>
+        <form name="test">
+        <input type="button" value="push to start" onClick="init()">
+        </form>
+    </p>
+    
+    <div class="float" id= "images">
+    </div>
+</body>
