@@ -260,4 +260,5 @@ int main(int argc, char **argv)
     shutdown(sock_client, SHUT_RDWR);
     close(sock_client);
   }
+  exit(0);
 }
