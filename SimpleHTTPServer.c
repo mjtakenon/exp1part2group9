@@ -23,19 +23,94 @@ void exp1_send_file(int sock, char* filename)
     }
     len = fread(buf, sizeof(char), 1460, fp);
   }
-
   fclose(fp);
+}
+
+void exp1_send_301(int sock)
+{
+  char buf[16384];
+  int ret;
+  sprintf(buf, "HTTP/1.0 301 Moved Permanently\r\n\r\n");
+  printf("%s", buf);
+  ret = send(sock, buf, strlen(buf), 0);
+  if(ret < 0){
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+  }
+}
+
+void exp1_send_302(int sock)
+{
+  char buf[16384];
+  int ret;
+  sprintf(buf, "HTTP/1.0 302 Found\r\n\r\n");
+  printf("%s", buf);
+  ret = send(sock, buf, strlen(buf), 0);
+  if(ret < 0){
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+  }
+}
+
+void exp1_send_303(int sock)
+{
+  char buf[16384];
+  int ret;
+  sprintf(buf, "HTTP/1.0 303 See Other\r\n\r\n");
+  printf("%s", buf);
+  ret = send(sock, buf, strlen(buf), 0);
+  if(ret < 0){
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+  }
+}
+
+void exp1_send_401(int sock)
+{
+  char buf[16384];
+  int ret;
+  sprintf(buf, "HTTP/1.0 401 Bad request\r\n\r\n");
+  printf("%s", buf);
+  ret = send(sock, buf, strlen(buf), 0);
+  if(ret < 0){
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+  }
+}
+
+void exp1_send_403(int sock)
+{
+  char buf[16384];
+  int ret;
+  sprintf(buf, "HTTP/1.0 403 forbidden\r\n\r\n");
+  printf("%s", buf);
+  ret = send(sock, buf, strlen(buf), 0);
+  if(ret < 0){
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+  }
+}
+
+void exp1_send_418(int sock)
+{
+  char buf[16384];
+  int ret;
+  sprintf(buf, "HTTP/1.0 418 I'm a teapot\r\n\r\n");
+  printf("%s", buf);
+  ret = send(sock, buf, strlen(buf), 0);
+  if(ret < 0){
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+  }
 }
 
 void exp1_send_404(int sock)
 {
   char buf[16384];
   int ret;
-
   sprintf(buf, "HTTP/1.0 404 Not Found\r\n\r\n");
   printf("%s", buf);
   ret = send(sock, buf, strlen(buf), 0);
-
   if(ret < 0){
     shutdown(sock, SHUT_RDWR);
     close(sock);
@@ -128,22 +203,30 @@ void exp1_check_file(exp1_info_type *info)
   struct stat s;
   int ret;
   char* pext;
-
   sprintf(info->real_path, "html%s", info->path);
   ret = stat(info->real_path, &s);
-
+  printf("%d\n", ret);
   if((s.st_mode & S_IFMT) == S_IFDIR){
     sprintf(info->real_path, "%s/index.html", info->real_path);
   }
-
-  printf("path = %s\n",info->real_path);
-
   ret = stat(info->real_path, &s);
-
-  if(ret == -1){
+  printf("real path %s\n", info->path);
+  if(ret == -1){ /*retはreal_pathの状態を取得できたかどうかを調べる変数。もしreal_pathがなかったら取得失敗として-1を返す。よってNOT FOUNDとなる。*/
     info->code = 404;
-  }else{
+  }else if(ret == 0){
+    if((s.st_mode & S_IRWXO) != S_IROTH){ /*S_IRWXOとは、「他人 (others) のアクセス許可用のビットマスク 」のことで、このうち実行権限(X)が与えられていなければ403Forbiddenのページを開くようになっている。*/
+      info->code = 403;
+    }else if(strcmp(info->path , "/301.html") == 0){
+        info->code = 301;
+    }else if(strcmp(info->path , "/302.html") == 0){
+        info->code = 302;
+    }else if(strcmp(info->path , "/303.html") == 0){
+        info->code = 303;
+    }else if(strcmp(info->path , "/418.html") == 0){
+        info->code = 418;
+    }else{
     info->code = 200;
+  }
     info->size = (int) s.st_size;
   }
 
@@ -152,9 +235,10 @@ void exp1_check_file(exp1_info_type *info)
     strcpy(info->type, "text/html");
   }else if(pext != NULL && strcmp(pext, ".jpg") == 0){
     strcpy(info->type, "image/jpeg");
-  }
-  else if(pext != NULL && strcmp(pext, ".php") == 0){
+  }else if(pext != NULL && strcmp(pext, ".php") == 0){
     strcpy(info->type,"text/php");
+  }else if(pext != NULL && strcmp(pext, ".mp4") == 0){
+    strcpy(info->type, "video/mp4");
   }
 }
 
