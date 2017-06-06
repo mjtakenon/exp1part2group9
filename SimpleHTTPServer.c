@@ -228,7 +228,8 @@ void exp1_send_php(int sock, char* filename)
   sprintf(command,"/usr/bin/php %s",filename);
 
   if ( (fp=popen(command,"r")) == NULL) {
-      err(EXIT_FAILURE, "%s", command);
+      /*err(EXIT_FAILURE, "%s", command);*/
+	  exit(0);
   }
 
    while(fgets(buf, sizeof(buf)-1, fp) != NULL){
@@ -242,6 +243,26 @@ void exp1_send_php(int sock, char* filename)
   pclose(fp);
 }
 
+/*追加(basic認証格納用)*/
+void input_base64(char* status,exp1_info_type *info){
+    int i=0,j=0;
+    char base[256];
+    status=strstr(status,"Basic");
+    while(status[i] != ' '){i++;}
+    i++;
+
+    while(status[i] != '\r')
+    {
+        base[j] = status[i];
+        j++;
+        i++;
+    }
+    base[j] = '\0';
+
+    strcpy(info->auth,base);
+
+}
+/*ここまで*/
 /*デバック用*/
 char printline(char *c){
     int i;
@@ -258,21 +279,25 @@ int user_pass_exist(char *pass){
     char line[64];
     char *ret;
     if(pass == NULL){
+      printf("pass is null\n");
         return 0;
     }
-
     if((fp = fopen("htaccess","r")) == NULL){
+      printf("file not found \n");
         return 0;
     }
-    /*printf("%s\n",pass);
-    printline(pass);*/
+    /*printf("%s\n",pass);*/
+    /*printline(pass);*/
     ret = fgets(line,64,fp);
     while (ret != NULL) {
+      /*fileから読み込んだ行の改行コードの削除*/
+      strtok(line,"\r\n");
+      /*printf("pass=%s\nline=%s\n",pass,line);*/
         if (strcmp(pass,line) == 0) {
             return 1;
         }
-        /*printf("%s\n",line);
-        printline(line);*/
+        /*printf("%s\n",line);*/
+        /*printline(line);*/
         ret = fgets(line,64,fp);
     }
     fclose(fp);
@@ -447,11 +472,15 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
 
     if(state == PARSE_END){
         /*Basic認証用文字列取得*/
-        pass = strstr(buf,"Authorization: Basic");
+        pass = strstr(buf,"Basic");
         if (pass != NULL) {
             input_base64(pass,info);
+
+	    /*printf("info->auth:%s\n",info->auth);*/
+
             strcpy(info->auth,base64_d(info->auth));
-            sprintf(info->auth,"%s\n",info->auth);
+
+	    /*printf("info->auth:%s\n",info->auth);*/
         }
         return 1;
     }
