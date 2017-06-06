@@ -242,6 +242,25 @@ void exp1_send_php(int sock, char* filename)
   pclose(fp);
 }
 
+/*追加(basic認証格納用)*/
+void input_base64(char* status,exp1_info_type *info){
+    int i=0,j=0;
+    char base[256];
+    while(status[i] != ' '){i++;}
+    i++;
+
+    while(status[i] != '\r')
+    {
+        base[j] = status[i];
+        j++;
+        i++;
+    }
+    base[j] = '\0';
+
+    strcpy(info->auth,base);
+
+}
+/*ここまで*/
 /*デバック用*/
 char printline(char *c){
     int i;
