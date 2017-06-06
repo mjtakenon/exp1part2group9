@@ -205,7 +205,7 @@ void exp1_check_file(exp1_info_type *info)
   char* pext;
   sprintf(info->real_path, "html%s", info->path);
   ret = stat(info->real_path, &s);
-  printf("%d\n", ret);
+  /*printf("%d\n", ret);*/
   if((s.st_mode & S_IFMT) == S_IFDIR){
     sprintf(info->real_path, "%s/index.html", info->real_path);
   }
