@@ -22,9 +22,5 @@
 #include <dirent.h>
 #include <signal.h>
 #include <pthread.h>
-<<<<<<< HEAD
-#include <sys/time.h>
 
 #include <openssl/md5.h>
-=======
->>>>>>> upstream/master
