@@ -1,4 +1,4 @@
-#include "exp1_http.h"
+#include "SimpleHTTPServer.h"
 
 void exp1_send_file(int sock, char* filename)
 {
@@ -66,8 +66,40 @@ void exp1_http_reply(int sock, exp1_info_type *info)
     return;
   }
 
-  exp1_send_file(sock, info->real_path);
+  if(strcmp(info->type,"text/php") == 0){
+    exp1_send_php(sock, info->real_path);
+  }
+  else{
+    exp1_send_file(sock, info->real_path);
+  }
 }
+
+void exp1_send_php(int sock, char* filename)
+{
+  char str[16384];
+  char buf[16384];
+  char tmp[256];
+  int ret,len;
+  FILE* fp;
+  
+  char command[256];
+  sprintf(command,"/usr/bin/php %s",filename);
+ 
+  if ( (fp=popen(command,"r")) == NULL) {
+      err(EXIT_FAILURE, "%s", command);
+  }
+
+   while(fgets(buf, sizeof(buf)-1, fp) != NULL){
+     ret = send(sock, buf, strlen(buf), 0);
+    if(ret < 0){
+      shutdown(sock, SHUT_RDWR);
+      close(sock);
+      break;
+    }
+  }
+  pclose(fp);
+}
+
 int exp1_http_session(int sock)
 {
   char buf[2048];
@@ -120,6 +152,9 @@ void exp1_check_file(exp1_info_type *info)
     strcpy(info->type, "text/html");
   }else if(pext != NULL && strcmp(pext, ".jpg") == 0){
     strcpy(info->type, "image/jpeg");
+  }
+  else if(pext != NULL && strcmp(pext, ".php") == 0){
+    strcpy(info->type,"text/php");
   }
 }
 
@@ -207,7 +242,12 @@ int main(int argc, char **argv)
 {
   int sock_listen;
 
-  sock_listen = exp1_tcp_listen(15503);
+  if(argc != 2){
+    printf("usage %s [port]\n",argv[0]);
+    exit(-1);
+  }
+
+  sock_listen = exp1_tcp_listen(atoi(argv[1]));
 
   while(1){
     struct sockaddr addr;
