@@ -228,7 +228,8 @@ void exp1_send_php(int sock, char* filename)
   sprintf(command,"/usr/bin/php %s",filename);
 
   if ( (fp=popen(command,"r")) == NULL) {
-      err(EXIT_FAILURE, "%s", command);
+      /*err(EXIT_FAILURE, "%s", command);*/
+	  exit(0);
   }
 
    while(fgets(buf, sizeof(buf)-1, fp) != NULL){
@@ -474,7 +475,7 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
         pass = strstr(buf,"Basic");
         if (pass != NULL) {
             input_base64(pass,info);
-	    
+
 	    /*printf("info->auth:%s\n",info->auth);*/
 
             strcpy(info->auth,base64_d(info->auth));
