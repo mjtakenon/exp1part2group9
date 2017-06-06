@@ -228,7 +228,8 @@ void exp1_send_php(int sock, char* filename)
   sprintf(command,"/usr/bin/php %s",filename);
 
   if ( (fp=popen(command,"r")) == NULL) {
-      err(EXIT_FAILURE, "%s", command);
+      /* err(EXIT_FAILURE, "%s", command); */
+	  exit(0);
   }
 
    while(fgets(buf, sizeof(buf)-1, fp) != NULL){
@@ -442,8 +443,8 @@ void exp1_parse_status(char* status, exp1_info_type *pinfo)
 int exp1_parse_header(char* buf, int size, exp1_info_type* info)
 {
   char status[1024];
+  int i,j,cp=0,post=0;
   char* pass;
-  int i, j;
 
   enum state_type
   {
@@ -461,7 +462,24 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
         j = 0;
         state = PARSE_END;
         exp1_parse_status(status, info);
+        if(strcmp(info->cmd,"POST")==0){
+          pass=strstr(buf,"\r\n\r\n");
+          if (pass != NULL) {
+            while(pass[cp]=='\n' || pass[cp]=='\r'){cp++;}
+
+            while(pass[cp]!='\r')
+            {
+              info->post[post] = pass[cp];
+              cp++;
+              post++;
+            }
+            info->post[post]='\0';
+            printf("post:%s\n",info->post);
+          }
+        }
+
         exp1_check_file(info);
+      	printf("hogehoge\n");
       }else{
         status[j] = buf[i];
         j++;
@@ -474,7 +492,7 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
         pass = strstr(buf,"Basic");
         if (pass != NULL) {
             input_base64(pass,info);
-	    
+
 	    /*printf("info->auth:%s\n",info->auth);*/
 
             strcpy(info->auth,base64_d(info->auth));
