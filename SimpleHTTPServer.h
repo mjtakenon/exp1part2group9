@@ -10,7 +10,7 @@ void exp1_send_file(int sock, char* filename);
 void exp1_send_301(int sock);
 void exp1_send_302(int sock);
 void exp1_send_303(int sock);
-void exp1_send_401(int sock);
+void exp1_send_401(int sock, exp1_info_type *info);
 void exp1_send_403(int sock);
 void exp1_send_404(int sock);
 void exp1_send_418(int sock);

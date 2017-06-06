@@ -103,11 +103,11 @@ void exp1_send_303(int sock)
   }
 }
 
-void exp1_send_401(int sock)
+void exp1_send_401(int sock, exp1_info_type *info)
 {
     char buf[16384];
-      int ret;
-      int len;
+    int ret;
+    int len;
       if (user_pass_exist(info->auth)) {
           len = sprintf(buf,"HTTP/1.0 200 OK\r\n");
           /*len += sprintf(buf + len,"Content-Length: %d\r\n", info->size);
@@ -418,6 +418,7 @@ void exp1_parse_status(char* status, exp1_info_type *pinfo)
 int exp1_parse_header(char* buf, int size, exp1_info_type* info)
 {
   char status[1024];
+  char* pass;
   int i, j;
 
   enum state_type
