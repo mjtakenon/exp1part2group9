@@ -38,6 +38,39 @@ char* base64_e(char* str_base64){	/*encode*/
 }
 /*ここまで*/
 
+/*digest認証*/
+char* get_md5(char* data){
+    MD5_CTX c;
+
+    unsigned char md[MD5_DIGEST_LENGTH];
+    static char mdString[33];
+    int r, i;
+
+    r = MD5_Init(&c);
+    if(r != 1) {
+        perror("init");
+        exit(1);
+    }
+
+    r = MD5_Update(&c, data, strlen(data));
+    if(r != 1) {
+        perror("update");
+        exit(1);
+    }
+
+    r = MD5_Final(md, &c);
+    if(r != 1) {
+        perror("final");
+        exit(1);
+    }
+
+    for(i = 0; i < 16; i++)
+         sprintf(&mdString[i * 2], "%02x", (unsigned int)md[i]);
+
+    return mdString;
+}
+/*ここまで*/
+
 void exp1_send_file(int sock, char* filename)
 {
   FILE *fp;
@@ -139,6 +172,151 @@ void exp1_send_401(int sock, exp1_info_type *info)
       }
 }
 
+/*Digest認証の実装*/
+void parse_char(char *line,char *res,char start,char end) {
+    if (line == NULL) {
+        printf("not status\n");
+        return;
+    }
+    int i=0,j=0;
+    while (line[i] != start) {i++;}
+    i++;
+    while (line[i] != end){
+        res[j] = line[i];
+        j++;i++;
+    }
+    res[j]='\0';
+}
+void input_md5(char *pass ,exp1_info_type *info){
+    char line[64];
+    char *point = pass;
+	printf("Digest_data : %s\n\n",pass);
+    Digest_data *data = malloc(sizeof(Digest_data));
+     pass = strstr(pass,"username");
+     parse_char(pass,line,'\"','\"');
+     strcpy(data->username,line);
+     pass = point;
+
+     pass = strstr(pass,"nonce");
+     parse_char(pass,line,'\"','\"');
+     strcpy(data->nonce,line);
+     pass = point;
+
+     pass = strstr(pass,"uri");
+     parse_char(pass,line,'\"','\"');
+     strcpy(data->uri,line);
+     pass = point;
+
+     pass = strstr(pass,"nc=");
+	 printf("nc : %s\n\n",pass);
+     parse_char(pass,line,'=',',');
+     strcpy(data->nc,line);
+     pass = point;
+
+     pass = strstr(pass,"cnonce");
+     parse_char(pass,line,'\"','\"');
+     strcpy(data->cnonce,line);
+     pass = point;
+
+     pass = strstr(pass,"response");
+     parse_char(pass,line,'\"','\"');
+     strcpy(data->response,line);
+     pass = point;
+
+     info->digest = data;
+}
+
+void print_md5(exp1_info_type *info){
+    printf("print_md5\n");
+    printf("username : %s\n",info->digest->username);
+    printf("nonce : %s\n",info->digest->nonce);
+    printf("uri : %s\n",info->digest->uri);
+    printf("nc : %s\n",info->digest->nc);
+    printf("cnonce : %s\n",info->digest->cnonce);
+    printf("response : %s\n",info->digest->response);
+}
+
+int digest_path(Digest_data *digest){
+    char A1[64];
+    char A2[64];
+    char response[64];
+    char buf[512];
+	char *ret;
+	FILE *fp;
+
+	if (digest == NULL) {
+		printf("no digest input\n");
+		return 0;
+	}
+	if((fp = fopen("htaccessD","r")) == NULL){
+		printf("file no exist\n");
+		return 0;
+	}
+	ret = fgets(buf,64,fp);
+	while (ret != NULL) {
+		strtok(buf,"\r\n");;
+		//A1 = ユーザ名 ":" realm ":" パスワード
+	    strcpy(A1,get_md5(buf));
+
+	    //A2 = HTTPのメソッド ":" コンテンツのURI
+	    sprintf(buf,"GET:%s",digest->uri);
+	    strcpy(A2,get_md5(buf));
+
+	    //response = MD5( MD5(A1) ":" nonce ":" nc ":" cnonce ":" qop ":" MD5(A2) )
+	    sprintf(buf,"%s:%s:%s:%s:auth:%s",A1,digest->nonce,digest->nc,digest->cnonce,A2);
+	    strcpy(response,get_md5(buf));
+
+	    printf("\nresponse : %s\n",digest->response);
+	    printf("calcresp : %s\n",response);
+
+	    if (strcmp(digest->response,response) == 0) {
+	        return 1;
+	    }
+		ret = fgets(buf,64,fp);
+	}
+	fclose(fp);
+    return 0;
+}
+void exp1_send_4012(int sock,exp1_info_type *info){
+    char buf[16384];
+    int ret;
+    int len;
+    if (info->digest != NULL) {
+        print_md5(info);
+    }
+    if (digest_path(info->digest)) {
+        len = sprintf(buf,"HTTP/1.0 200 OK\r\n");
+        /*len += sprintf(buf + len,"Content-Length: %d\r\n", info->size);
+        len += sprintf(buf + len,"Content-Type: %s\r\n", info->type);*/
+        len += sprintf(buf + len,"\r\n");
+        len += sprintf(buf + len,"おいおいおいおいおいおい死ぬわおいおいおいおいおい digest\n");
+
+        ret = send(sock,buf,strlen(buf),0);
+
+        if (ret < 0) {
+            shutdown(sock, SHUT_RDWR);
+            close(sock);
+        }
+        return;
+    }
+    len = sprintf(buf,"HTTP/1.0 401 Authorization Required\r\n");
+    len += sprintf(buf + len,"WWW-Authenticate: Digest realm=\"Digest\", ");
+    len += sprintf(buf + len,"nonce=\"bakajane-no\", algorithm=MD5, qop=\"auth\"\r\n");
+    /*len += sprintf(buf + len,"Content-Length: %d\r\n", info->size);
+    len += sprintf(buf + len,"Content-Type: %s\r\n", info->type);*/
+    len += sprintf(buf+len,"\r\n");
+
+    len += sprintf(buf + len,"許可されてねえよぶっ殺すぞこのやろうDigest\n");
+    printf("%s",buf);
+    ret = send(sock,buf,strlen(buf),0);
+
+    if (ret < 0) {
+        shutdown(sock, SHUT_RDWR);
+        close(sock);
+    }
+}
+/*ここまでがDigest*/
+
 void exp1_send_403(int sock)
 {
   char buf[16384];
@@ -194,7 +372,13 @@ void exp1_http_reply(int sock, exp1_info_type *info)
         exp1_send_401(sock,info);
         printf("401 basic");
         return;
-    }
+  }
+  if(info->code == 4012){
+	  printf("401 digest\n");
+	  exp1_send_4012(sock,info);
+	  return;
+  }
+
 
   len = sprintf(buf, "HTTP/1.0 200 OK\r\n");
   len += sprintf(buf + len, "Content-Length: %d\r\n", info->size);
@@ -364,6 +548,12 @@ void exp1_check_file(exp1_info_type *info)
   }
   /*ここまで*/
 
+  /*追加(Dijest認証)ごみみたいな分岐でごめんなさい*/
+  if (pext != NULL && strcmp(pext,"/secure2")==0) {
+	  info->code = 4012;
+  }
+  /*ここまで*/
+
   pext = strstr(info->path, ".");
   if(pext != NULL && strcmp(pext, ".html") == 0){
     strcpy(info->type, "text/html");
@@ -393,6 +583,8 @@ void exp1_check_file(exp1_info_type *info)
     strcpy(info->type, "application/xml");
   }else if(pext != NULL && strcmp(pext, ".mp3") == 0){
     strcpy(info->type, "audio/mpeg");
+  }else{
+	strcpy(info->type, "text/html");
   }
 }
 
@@ -475,13 +667,15 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
         pass = strstr(buf,"Basic");
         if (pass != NULL) {
             input_base64(pass,info);
-
-	    /*printf("info->auth:%s\n",info->auth);*/
-
             strcpy(info->auth,base64_d(info->auth));
-
-	    /*printf("info->auth:%s\n",info->auth);*/
         }
+		/*Digest認証用文字列取得*/
+		pass = strstr(buf,"Authorization: Digest");
+		if (pass != NULL) {
+			input_md5(pass,info);
+		}else{
+			info->digest = NULL;
+		}
         return 1;
     }
   }

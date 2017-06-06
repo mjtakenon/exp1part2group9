@@ -22,3 +22,5 @@
 #include <signal.h>
 #include <pthread.h>
 #include <sys/time.h>
+
+#include <openssl/md5.h>
