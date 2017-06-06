@@ -1,5 +1,11 @@
 #include "exp1_http.h"
 
+
+char* base64_d(char* str_base64);
+char* base64_e(char* str_base64);
+char printline(char *c);
+int user_pass_exist(char *pass);
+
 void exp1_send_file(int sock, char* filename);
 void exp1_send_301(int sock);
 void exp1_send_302(int sock);

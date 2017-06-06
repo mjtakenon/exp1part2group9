@@ -1,5 +1,43 @@
 #include "SimpleHTTPServer.h"
 
+/*佐藤君実装auth64のエンコードデコード実装*/
+char* base64_d(char* str_base64){	/*decode*/
+
+	char tmpfile[L_tmpnam] = "tmp.txt";
+	char cmd[1024];
+
+	FILE *fp;
+	fp = fopen("tmp.txt", "w+");
+    fclose(fp);
+	sprintf(cmd, "echo %s | base64 -d > %s", str_base64, tmpfile);
+	system(cmd);
+
+    fp = fopen("tmp.txt", "r");
+	static char s[100];
+	fgets(s, sizeof(s), fp);
+	remove(tmpfile);
+
+	return s;
+}
+
+char* base64_e(char* str_base64){	/*encode*/
+
+	char tmpfile[L_tmpnam] = "tmp.txt";
+	char cmd[1024];
+
+	FILE *fp;
+	fp = fopen("tmp.txt", "w+");
+	sprintf(cmd, "echo %s | base64 > %s", str_base64, tmpfile);
+	system(cmd);
+
+	static char s[100];
+	fgets(s, sizeof(s), fp);
+	remove(tmpfile);
+
+	return s;
+}
+/*ここまで*/
+
 void exp1_send_file(int sock, char* filename)
 {
   FILE *fp;
@@ -67,15 +105,38 @@ void exp1_send_303(int sock)
 
 void exp1_send_401(int sock)
 {
-  char buf[16384];
-  int ret;
-  sprintf(buf, "HTTP/1.0 401 Bad request\r\n\r\n");
-  printf("%s", buf);
-  ret = send(sock, buf, strlen(buf), 0);
-  if(ret < 0){
-    shutdown(sock, SHUT_RDWR);
-    close(sock);
-  }
+    char buf[16384];
+      int ret;
+      int len;
+      if (user_pass_exist(info->auth)) {
+          len = sprintf(buf,"HTTP/1.0 200 OK\r\n");
+          /*len += sprintf(buf + len,"Content-Length: %d\r\n", info->size);
+          len += sprintf(buf + len,"Content-Type: %s\r\n", info->type);*/
+          len += sprintf(buf + len,"\r\n");
+          len += sprintf(buf + len,"みちゃだめよ～～～は～と\n");
+
+          ret = send(sock,buf,strlen(buf),0);
+
+          if (ret < 0) {
+              shutdown(sock, SHUT_RDWR);
+              close(sock);
+          }
+          return;
+      }
+      len = sprintf(buf,"HTTP/1.0 401 Authorization Required\r\n");
+      len += sprintf(buf + len,"WWW-Authenticate: Basic realm=\"Secret Room of Takeuchi\"\r\n");
+      /*len += sprintf(buf + len,"Content-Length: %d\r\n", info->size);
+      len += sprintf(buf + len,"Content-Type: %s\r\n", info->type);*/
+      len += sprintf(buf+len,"\r\n");
+
+      len += sprintf(buf + len,"許可されてねえよばーーか\n");
+      printf("%s",buf);
+      ret = send(sock,buf,strlen(buf),0);
+
+      if (ret < 0) {
+          shutdown(sock, SHUT_RDWR);
+          close(sock);
+      }
 }
 
 void exp1_send_403(int sock)
@@ -129,6 +190,12 @@ void exp1_http_reply(int sock, exp1_info_type *info)
     return;
   }
 
+  if(info->code == 401){
+        exp1_send_401(sock,info);
+        printf("401 basic");
+        return;
+    }
+
   len = sprintf(buf, "HTTP/1.0 200 OK\r\n");
   len += sprintf(buf + len, "Content-Length: %d\r\n", info->size);
   len += sprintf(buf + len, "Content-Type: %s\r\n", info->type);
@@ -156,10 +223,10 @@ void exp1_send_php(int sock, char* filename)
   char tmp[256];
   int ret,len;
   FILE* fp;
-  
+
   char command[256];
   sprintf(command,"/usr/bin/php %s",filename);
- 
+
   if ( (fp=popen(command,"r")) == NULL) {
       err(EXIT_FAILURE, "%s", command);
   }
@@ -175,6 +242,42 @@ void exp1_send_php(int sock, char* filename)
   pclose(fp);
 }
 
+/*デバック用*/
+char printline(char *c){
+    int i;
+    while(c[i] != '\0'){
+        printf("%d ",(int)c[i]);
+        i++;
+    }
+    printf("\n");
+}
+
+/*ユーザーパスワードが同じか比較関数*/
+int user_pass_exist(char *pass){
+    FILE *fp;
+    char line[64];
+    char *ret;
+    if(pass == NULL){
+        return 0;
+    }
+
+    if((fp = fopen("htaccess","r")) == NULL){
+        return 0;
+    }
+    /*printf("%s\n",pass);
+    printline(pass);*/
+    ret = fgets(line,64,fp);
+    while (ret != NULL) {
+        if (strcmp(pass,line) == 0) {
+            return 1;
+        }
+        /*printf("%s\n",line);
+        printline(line);*/
+        ret = fgets(line,64,fp);
+    }
+    fclose(fp);
+    return 0;
+}
 int exp1_http_session(int sock)
 {
   char buf[2048];
@@ -229,6 +332,12 @@ void exp1_check_file(exp1_info_type *info)
   }
     info->size = (int) s.st_size;
   }
+  /*追加(basic認証)*/
+  pext = strstr(info->path, "/secure");
+  if (pext != NULL && strcmp(pext,"/secure")==0){
+      info->code = 401;
+  }
+  /*ここまで*/
 
   pext = strstr(info->path, ".");
   if(pext != NULL && strcmp(pext, ".html") == 0){
@@ -336,7 +445,14 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
     }
 
     if(state == PARSE_END){
-      return 1;
+        /*Basic認証用文字列取得*/
+        pass = strstr(buf,"Authorization: Basic");
+        if (pass != NULL) {
+            input_base64(pass,info);
+            strcpy(info->auth,base64_d(info->auth));
+            sprintf(info->auth,"%s\n",info->auth);
+        }
+        return 1;
     }
   }
   return 0;
