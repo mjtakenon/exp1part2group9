@@ -222,10 +222,8 @@ int main(int argc, char** argv)
         continue;
       }
       /*calc sum(tcp&http)*/
-      /*printf("%f,%f,%f\n",data[i][j]->start,data[i][j]->tcp_end,data[i][j]->http_end);*/
       tcp_average += (data[i][j]->tcp_end - data[i][j]->start);
       http_average += (data[i][j]->http_end - data[i][j]->start);
-      printf("%f\n",tcp_average);
       if(data[i][j]->end >= total_max){
 	total_max = data[i][j]->end;
       }
@@ -244,11 +242,11 @@ int main(int argc, char** argv)
   free(th);
 
   /*calc average*/
-  printf("%d\n",(num*ps_num)-errorcount);
+  /*printf("%d\n",(num*ps_num)-errorcount);*/
   tcp_average /= (num*ps_num)-errorcount;
   http_average /= (num*ps_num)-errorcount;
 
-  printf("tcp:%10.10f\nhttp:%10.10f\ntotal:%10.10f\n",tcp_average,http_average,total_max-start_time);
+  printf("tcp-average:%10.10f\nhttp-average:%10.10f\ntotal-time:%10.10f\n",tcp_average,http_average,total_max-start_time);
 
   printf("session error ratio is %1.3f\n",(double)g_error_count / (double) num*ps_num);
 }
