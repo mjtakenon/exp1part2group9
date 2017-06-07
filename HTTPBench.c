@@ -58,7 +58,10 @@ void* exp1_eval_thread(void* param)
       close(pp[i][0]);
       close(qq[i][1]);
 
+      data[i]->start = gettimeofday_sec();
+
       sock = exp1_tcp_connect(g_hostname, data[i]->port);
+
       data[i]->tcp_end = gettimeofday_sec();
       if(sock < 0){
 	      printf("session error!(sock open failed)\n");
@@ -92,6 +95,11 @@ void* exp1_eval_thread(void* param)
       data[i]->end = gettimeofday_sec();
       close(sock);
       /*printf("%f,%f,%f\n",data[i]->tcp_end,data[i]->http_end,data[i]->end);*/
+
+
+      sprintf(str,"%f",data[i]->start);
+      write(pp[i][1],str,sizeof(str));
+      read(qq[i][0],str,sizeof(str));
 
       sprintf(str,"%f",data[i]->tcp_end);
       write(pp[i][1],str,sizeof(str));
@@ -127,6 +135,10 @@ void* exp1_eval_thread(void* param)
       wait(0);
       continue;
     }
+    data[i]->start = atof(str);
+    write(qq[i][1],str,sizeof(str));
+
+    read(pp[i][0],str,sizeof(str));
     data[i]->tcp_end = atof(str);
     write(qq[i][1],str,sizeof(str));
 
@@ -157,9 +169,11 @@ int main(int argc, char** argv)
   int errorcount = 0;
   int aopt = 0;
   int bopt = 0;
-  double total_average = 0;
   double tcp_average = 0;
   double http_average = 0;
+  double start_time;
+  double total_max = 0;
+
   pthread_t *th;
   sdata ***data;
   
@@ -189,29 +203,35 @@ int main(int argc, char** argv)
       int fileid = rand() % 100;
       data[i][j]->pfileid = fileid;
       data[i][j]->port = atoi(argv[4]);
-      data[i][j]->start = gettimeofday_sec();
+      /*data[i][j]->start = gettimeofday_sec();*/
       data[i][j]->ps_num = ps_num;
       data[i][j]->is_error = 0;
     }
+    start_time = gettimeofday_sec();
     pthread_create(&th[i], NULL, exp1_eval_thread, data[i]);
   }
 
-  for(i = 0; i < num; i++){
+  for(i = 0; i < num; i++) {
     pthread_join(th[i], NULL);
   }
 
-  for(i = 0;i < num;i++){
-    for(j = 0; j < ps_num; j++){
-      if(data[i][j]->is_error == 1)
-      {
+  for(i = 0;i < num;i++) {
+    for(j = 0; j < ps_num; j++) {
+      if(data[i][j]->is_error == 1) {
         errorcount++;
         continue;
       }
+      /*calc sum(tcp&http)*/
+      /*printf("%f,%f,%f\n",data[i][j]->start,data[i][j]->tcp_end,data[i][j]->http_end);*/
       tcp_average += (data[i][j]->tcp_end - data[i][j]->start);
       http_average += (data[i][j]->http_end - data[i][j]->start);
-      total_average += (data[i][j]->end - data[i][j]->start);
+      printf("%f\n",tcp_average);
+      if(data[i][j]->end >= total_max){
+	total_max = data[i][j]->end;
+      }
     }
   }
+
   for(i = 0;i < num;i++){
     for(j = 0; j < ps_num; j++){
       free(data[i][j]);
@@ -223,11 +243,12 @@ int main(int argc, char** argv)
   free(data);
   free(th);
 
+  /*calc average*/
+  printf("%d\n",(num*ps_num)-errorcount);
   tcp_average /= (num*ps_num)-errorcount;
   http_average /= (num*ps_num)-errorcount;
-  total_average /= (num*ps_num)-errorcount;
-  
-  printf("tcp:%10.10f\nhttp:%10.10f\ntotal:%10.10f\n",tcp_average,http_average,total_average);
 
-  printf("session error ratio is %1.3f\n",(double)g_error_count / (double) num);
+  printf("tcp:%10.10f\nhttp:%10.10f\ntotal:%10.10f\n",tcp_average,http_average,total_max-start_time);
+
+  printf("session error ratio is %1.3f\n",(double)g_error_count / (double) num*ps_num);
 }

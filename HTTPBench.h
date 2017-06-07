@@ -10,9 +10,9 @@ typedef struct{
   int ps_num;
   int is_error;
   double start;
-  double end;
   double tcp_end;
   double http_end;
+  double end;
 } sdata;
 
 void* exp1_eval_thread(void* param);
