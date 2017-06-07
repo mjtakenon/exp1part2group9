@@ -51,7 +51,7 @@
             console.log(host);
             
             xhr.open( 'get', host, false );
-            xhr.send();
+            xhr.send(null);
             
             xhr.abort(); // 再利用する際にも abort() しないと再利用できないらしい.
         }
