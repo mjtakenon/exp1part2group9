@@ -382,7 +382,11 @@ void exp1_http_reply(int sock, exp1_info_type *info)
 
   len = sprintf(buf, "HTTP/1.0 200 OK\r\n");
   len += sprintf(buf + len, "Content-Length: %d\r\n", info->size);
-  len += sprintf(buf + len, "Content-Type: %s\r\n", info->type);
+  if (strcmp(info->type,"text/php")==0) {
+  	len += sprintf(buf + len, "Content-Type: %s\r\n", "text/html");
+  }else{
+	len += sprintf(buf + len, "Content-Type: %s\r\n", info->type);
+  }
   len += sprintf(buf + len, "\r\n");
 
   ret = send(sock, buf, len, 0);
@@ -393,6 +397,11 @@ void exp1_http_reply(int sock, exp1_info_type *info)
   }
 
   if(strcmp(info->type,"text/php") == 0){
+	  if (strcmp(info->cmd,"POST")==0){
+  		//使ってないからbufを使いましょう
+		sprintf(buf,"echo $%s=\"%s\"","POST_STR",info->post);
+	  	setenv("POST_STR",info->post,1);
+  	}
     exp1_send_php(sock, info->real_path);
   }
   else{
@@ -562,7 +571,7 @@ void exp1_check_file(exp1_info_type *info)
   }else if(pext != NULL && strcmp(pext, ".jpg") == 0){
     strcpy(info->type, "image/jpeg");
   }else if(pext != NULL && strcmp(pext, ".php") == 0){
-    strcpy(info->type,"text/php");
+    strcpy(info->type,"text/php");//phpのままだとダウンロードされる
   }else if(pext != NULL && strcmp(pext, ".mp4") == 0){
     strcpy(info->type, "video/mp4");
   }else if(pext != NULL && strcmp(pext, ".png") == 0){
@@ -668,10 +677,12 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
             info->post[post]='\0';
             printf("post:%s\n",info->post);
           }
+		  else{
+			  strcpy(info->post,"");
+		  }
         }
 
         exp1_check_file(info);
-      	printf("hogehoge\n");
       }else{
         status[j] = buf[i];
         j++;
