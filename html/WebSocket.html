@@ -5,8 +5,8 @@
         <title>おしゃべりできたらいいな～</title>
         <script type="text/javascript">
             var ws;
-            function init(){
-                ws = new WebSocket("ws://localhost:15044",["test,","chat"]);
+            function initws(){
+                ws = new WebSocket("ws://192.168.0.200:15044");
                 ws.onopen = onOpen;
                 ws.onerror = onError;
             }
@@ -21,7 +21,7 @@
             }
             function onMessage(event){
                 console.log("おいなんか受け取ったぞ\n");
-                console.log("event" + event;);
+                console.log("event" + event);
                 console.log("data" + event.data);
             }
         </script>
@@ -29,7 +29,10 @@
     <body>
         <h1>なんかおしゃべりしようぜー</h1>
         <form>
-            <>
+            <input type="button" name="talkbutton" value="おしゃべり開始?" onclick="initws()">
+            <input type="text">
         </form>
+        <h2>履歴じゃないかな?</h2>
+        <div name="rireki"></div>
     </body>
 </html>

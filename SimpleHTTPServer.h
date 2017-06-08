@@ -11,6 +11,9 @@ char* get_md5(char* data);
 void parse_char(char *line,char *res,char start,char end);
 void input_md5(char *pass ,exp1_info_type *info);
 
+char *sha1_to_hex(const unsigned char *sha1);
+char *calc_sha1(const char *body);
+
 void exp1_send_file(int sock, char* filename);
 void exp1_send_301(int sock);
 void exp1_send_302(int sock);
