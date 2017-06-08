@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>おしゃべりできたらいいな～</title>
+        <script type="text/javascript">
+            var ws;
+            function init(){
+                ws = new WebSocket("ws://localhost:15044",["test,","chat"]);
+                ws.onopen = onOpen;
+                ws.onerror = onError;
+            }
+            function onOpen(event){
+                console.log("つないだよ");
+            }
+            function onError(event){
+                console.log("エラーじゃねーか : "+event);
+            }
+            function onClose(event){
+                console.log("しまっちゃおうねー");
+            }
+            function onMessage(event){
+                console.log("おいなんか受け取ったぞ\n");
+                console.log("event" + event;);
+                console.log("data" + event.data);
+            }
+        </script>
+    </head>
+    <body>
+        <h1>なんかおしゃべりしようぜー</h1>
+        <form>
+            <>
+        </form>
+    </body>
+</html>

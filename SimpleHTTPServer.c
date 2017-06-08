@@ -5,7 +5,7 @@ char* base64_d(char* str_base64){	/*decode*/
 
 	char tmpfile[L_tmpnam] = "tmp.txt";
 	char cmd[1024];
-
+	char *s;
 	FILE *fp;
 	fp = fopen("tmp.txt", "w+");
     fclose(fp);
@@ -13,8 +13,11 @@ char* base64_d(char* str_base64){	/*decode*/
 	system(cmd);
 
     fp = fopen("tmp.txt", "r");
-	static char s[100];
-	fgets(s, sizeof(s), fp);
+	do{
+		s = (char *)malloc(sizeof(char) * 100);
+	}while(s == NULL);
+
+	fgets(s, 100, fp);/*名前しか取得できなかったぞ馬鹿やろう*/
 	remove(tmpfile);
 
 	return s;
@@ -24,13 +27,17 @@ char* base64_e(char* str_base64){	/*encode*/
 
 	char tmpfile[L_tmpnam] = "tmp.txt";
 	char cmd[1024];
-
+	char *s;
 	FILE *fp;
+
+	do{
+		s = (char *)malloc(sizeof(char) * 100);
+	}while(s == NULL);
+
 	fp = fopen("tmp.txt", "w+");
 	sprintf(cmd, "echo %s | base64 > %s", str_base64, tmpfile);
 	system(cmd);
 
-	static char s[100];
 	fgets(s, sizeof(s), fp);
 	remove(tmpfile);
 
@@ -43,8 +50,12 @@ char* get_md5(char* data){
     MD5_CTX c;
 
     unsigned char md[MD5_DIGEST_LENGTH];
-    static char mdString[33];
+    char *mdString;
     int r, i;
+
+	do{
+		mdString = (char *)malloc(sizeof(char) * 33);
+	}while(mdString == NULL);
 
     r = MD5_Init(&c);
     if(r != 1) {
@@ -174,11 +185,14 @@ void exp1_send_401(int sock, exp1_info_type *info)
 
 /*Digest認証の実装*/
 void parse_char(char *line,char *res,char start,char end) {
+	int i=0;
+	int j=0;
+
     if (line == NULL) {
         printf("not status\n");
         return;
     }
-    int i=0,j=0;
+
     while (line[i] != start) {i++;}
     i++;
     while (line[i] != end){
@@ -190,7 +204,7 @@ void parse_char(char *line,char *res,char start,char end) {
 void input_md5(char *pass ,exp1_info_type *info){
     char line[64];
     char *point = pass;
-	printf("Digest_data : %s\n\n",pass);
+	/*printf("Digest_data : %s\n\n",pass);*/
     Digest_data *data = malloc(sizeof(Digest_data));
      pass = strstr(pass,"username");
      parse_char(pass,line,'\"','\"');
@@ -255,14 +269,14 @@ int digest_path(Digest_data *digest){
 	ret = fgets(buf,64,fp);
 	while (ret != NULL) {
 		strtok(buf,"\r\n");;
-		//A1 = ユーザ名 ":" realm ":" パスワード
+		/*A1 = ユーザ名 ":" realm ":" パスワード*/
 	    strcpy(A1,get_md5(buf));
 
-	    //A2 = HTTPのメソッド ":" コンテンツのURI
+	    /*A2 = HTTPのメソッド ":" コンテンツのURI*/
 	    sprintf(buf,"GET:%s",digest->uri);
 	    strcpy(A2,get_md5(buf));
 
-	    //response = MD5( MD5(A1) ":" nonce ":" nc ":" cnonce ":" qop ":" MD5(A2) )
+	    /*response = MD5( MD5(A1) ":" nonce ":" nc ":" cnonce ":" qop ":" MD5(A2) )*/
 	    sprintf(buf,"%s:%s:%s:%s:auth:%s",A1,digest->nonce,digest->nc,digest->cnonce,A2);
 	    strcpy(response,get_md5(buf));
 
@@ -398,7 +412,8 @@ void exp1_http_reply(int sock, exp1_info_type *info)
 
   if(strcmp(info->type,"text/php") == 0){
 	  if (strcmp(info->cmd,"POST")==0){
-  		//使ってないからbufを使いましょう
+  		/*使ってないからbufを使いましょう*/
+		setenv("POST_STR","",1);/*初期化*/
 		sprintf(buf,"echo $%s=\"%s\"","POST_STR",info->post);
 	  	setenv("POST_STR",info->post,1);
   	}
@@ -411,10 +426,8 @@ void exp1_http_reply(int sock, exp1_info_type *info)
 
 void exp1_send_php(int sock, char* filename)
 {
-  char str[16384];
   char buf[16384];
-  char tmp[256];
-  int ret,len;
+  int ret;
   FILE* fp;
 
   char command[256];
@@ -457,7 +470,7 @@ void input_base64(char* status,exp1_info_type *info){
 }
 /*ここまで*/
 /*デバック用*/
-char printline(char *c){
+void printline(char *c){
     int i;
     while(c[i] != '\0'){
         printf("%d ",(int)c[i]);
@@ -485,7 +498,7 @@ int user_pass_exist(char *pass){
     while (ret != NULL) {
       /*fileから読み込んだ行の改行コードの削除*/
       strtok(line,"\r\n");
-      /*printf("pass=%s\nline=%s\n",pass,line);*/
+      printf("pass=%s\nline=%s\n",pass,line);
         if (strcmp(pass,line) == 0) {
             return 1;
         }
@@ -571,7 +584,7 @@ void exp1_check_file(exp1_info_type *info)
   }else if(pext != NULL && strcmp(pext, ".jpg") == 0){
     strcpy(info->type, "image/jpeg");
   }else if(pext != NULL && strcmp(pext, ".php") == 0){
-    strcpy(info->type,"text/php");//phpのままだとダウンロードされる
+    strcpy(info->type,"text/php");/*phpのままだとダウンロードされる*/
   }else if(pext != NULL && strcmp(pext, ".mp4") == 0){
     strcpy(info->type, "video/mp4");
   }else if(pext != NULL && strcmp(pext, ".png") == 0){
@@ -601,7 +614,6 @@ void exp1_parse_status(char* status, exp1_info_type *pinfo)
 {
   char cmd[1024];
   char path[1024];
-  char* pext;
   int i, j;
 
   enum state_type
@@ -635,6 +647,8 @@ void exp1_parse_status(char* status, exp1_info_type *pinfo)
         j++;
       }
       break;
+	case SEARCH_END:
+	  break;
     }
   }
   strcpy(pinfo->cmd, cmd);
@@ -646,6 +660,7 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
   char status[1024];
   int i,j,cp=0,post=0;
   char* pass;
+  char *base64d;
 
   enum state_type
   {
@@ -675,7 +690,7 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
               post++;
             }
             info->post[post]='\0';
-            printf("post:%s\n",info->post);
+            /*printf("post:%s\n",info->post);*/
           }
 		  else{
 			  strcpy(info->post,"");
@@ -688,14 +703,19 @@ int exp1_parse_header(char* buf, int size, exp1_info_type* info)
         j++;
       }
       break;
+
+	case PARSE_END:
+	  break;
     }
 
     if(state == PARSE_END){
         /*Basic認証用文字列取得*/
         pass = strstr(buf,"Basic");
         if (pass != NULL) {
-            input_base64(pass,info);
-            strcpy(info->auth,base64_d(info->auth));
+			input_base64(pass,info);
+			base64d = base64_d(info->auth);
+            strcpy(info->auth, base64d);
+			free(base64d);
         }
 		/*Digest認証用文字列取得*/
 		pass = strstr(buf,"Authorization: Digest");
