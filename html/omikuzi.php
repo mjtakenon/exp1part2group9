@@ -15,11 +15,10 @@ if (isset($_POST['name'])) {
 if (isset($_POST['age'])) {
     $age = $_POST['age'];
 }
-$hash = md5($name . $age);
-$hash = pow(hexdec($hash)/10,35)%10;
 
 if ($omikuzi) {
-    echo $name."さん:".$age."歳!!\n";
+    $hash = mt_rand()%10;
+    echo "<b>".$name."さん:".intval($age)."歳!!<b>\n";
     echo "<h1>あなたの運勢は…</h1><br>\n<p><b>";
 
     switch ($hash) {

@@ -3,7 +3,7 @@
 
 char* base64_d(char* str_base64);
 char* base64_e(char* str_base64);
-char printline(char *c);
+void printline(char *c);
 int user_pass_exist(char *pass);
 void input_base64(char* status,exp1_info_type *info);
 
