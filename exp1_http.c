@@ -1,7 +1,6 @@
 #include "exp1_http.h"
 
-int exp1_tcp_listen(int port)
-{
+int exp1_tcp_listen(int port){
   int sock;
   /*インターネット用ソケット構造体*/
   struct sockaddr_in addr;
