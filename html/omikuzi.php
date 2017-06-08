@@ -15,6 +15,11 @@ if (isset($_POST['name'])) {
 if (isset($_POST['age'])) {
     $age = $_POST['age'];
 }
+<<<<<<< HEAD
+=======
+$hash = md5($name . $age);
+$hash = pow(hexdec($hash)/10,35)%10;
+>>>>>>> upstream/master
 
 if ($omikuzi) {
     $hash = mt_rand()%10;

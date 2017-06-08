@@ -5,7 +5,11 @@ char* base64_d(char* str_base64){	/*decode*/
 
 	char tmpfile[L_tmpnam] = "tmp.txt";
 	char cmd[1024];
+<<<<<<< HEAD
 	char *s;
+=======
+	char s[100];
+>>>>>>> upstream/master
 	FILE *fp;
 	fp = fopen("tmp.txt", "w+");
     fclose(fp);
@@ -13,11 +17,16 @@ char* base64_d(char* str_base64){	/*decode*/
 	system(cmd);
 
     fp = fopen("tmp.txt", "r");
+<<<<<<< HEAD
 	do{
 		s = (char *)malloc(sizeof(char) * 100);
 	}while(s == NULL);
 
 	fgets(s, 100, fp);/*名前しか取得できなかったぞ馬鹿やろう*/
+=======
+
+	fgets(s, sizeof(s), fp);
+>>>>>>> upstream/master
 	remove(tmpfile);
 
 	return s;
@@ -27,7 +36,12 @@ char* base64_e(char* str_base64){	/*encode*/
 
 	char tmpfile[L_tmpnam] = "tmp.txt";
 	char cmd[1024];
+<<<<<<< HEAD
 	char *s;
+=======
+	char s[100];
+
+>>>>>>> upstream/master
 	FILE *fp;
 
 	do{
@@ -38,6 +52,10 @@ char* base64_e(char* str_base64){	/*encode*/
 	sprintf(cmd, "echo %s | base64 > %s", str_base64, tmpfile);
 	system(cmd);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
 	fgets(s, sizeof(s), fp);
 	remove(tmpfile);
 
@@ -50,7 +68,12 @@ char* get_md5(char* data){
     MD5_CTX c;
 
     unsigned char md[MD5_DIGEST_LENGTH];
+<<<<<<< HEAD
     char *mdString;
+=======
+
+	char mdString[33];
+>>>>>>> upstream/master
     int r, i;
 
 	do{
@@ -185,6 +208,7 @@ void exp1_send_401(int sock, exp1_info_type *info)
 
 /*Digest認証の実装*/
 void parse_char(char *line,char *res,char start,char end) {
+<<<<<<< HEAD
 	int i=0;
 	int j=0;
 
@@ -193,6 +217,16 @@ void parse_char(char *line,char *res,char start,char end) {
         return;
     }
 
+=======
+  int i=0;
+  int j=0;
+
+	if (line == NULL) {
+        printf("not status\n");
+        return;
+    }
+    
+>>>>>>> upstream/master
     while (line[i] != start) {i++;}
     i++;
     while (line[i] != end){
@@ -413,7 +447,10 @@ void exp1_http_reply(int sock, exp1_info_type *info)
   if(strcmp(info->type,"text/php") == 0){
 	  if (strcmp(info->cmd,"POST")==0){
   		/*使ってないからbufを使いましょう*/
+<<<<<<< HEAD
 		setenv("POST_STR","",1);/*初期化*/
+=======
+>>>>>>> upstream/master
 		sprintf(buf,"echo $%s=\"%s\"","POST_STR",info->post);
 	  	setenv("POST_STR",info->post,1);
   	}
