@@ -7,6 +7,10 @@ char printline(char *c);
 int user_pass_exist(char *pass);
 void input_base64(char* status,exp1_info_type *info);
 
+char* get_md5(char* data);
+void parse_char(char *line,char *res,char start,char end);
+void input_md5(char *pass ,exp1_info_type *info);
+
 void exp1_send_file(int sock, char* filename);
 void exp1_send_301(int sock);
 void exp1_send_302(int sock);

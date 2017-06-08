@@ -13,7 +13,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
-#include <netdb.h> 
+#include <netdb.h>
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -22,3 +22,5 @@
 #include <dirent.h>
 #include <signal.h>
 #include <pthread.h>
+
+#include <openssl/md5.h>
