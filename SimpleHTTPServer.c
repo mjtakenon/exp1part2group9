@@ -5,7 +5,7 @@ char* base64_d(char* str_base64){	/*decode*/
 
 	char tmpfile[L_tmpnam] = "tmp.txt";
 	char cmd[1024];
-
+	char s[100];
 	FILE *fp;
 	fp = fopen("tmp.txt", "w+");
     fclose(fp);
@@ -13,7 +13,7 @@ char* base64_d(char* str_base64){	/*decode*/
 	system(cmd);
 
     fp = fopen("tmp.txt", "r");
-	static char s[100];
+
 	fgets(s, sizeof(s), fp);
 	remove(tmpfile);
 
@@ -24,13 +24,14 @@ char* base64_e(char* str_base64){	/*encode*/
 
 	char tmpfile[L_tmpnam] = "tmp.txt";
 	char cmd[1024];
+	char s[100];
 
 	FILE *fp;
 	fp = fopen("tmp.txt", "w+");
 	sprintf(cmd, "echo %s | base64 > %s", str_base64, tmpfile);
 	system(cmd);
 
-	static char s[100];
+
 	fgets(s, sizeof(s), fp);
 	remove(tmpfile);
 
@@ -43,7 +44,8 @@ char* get_md5(char* data){
     MD5_CTX c;
 
     unsigned char md[MD5_DIGEST_LENGTH];
-    static char mdString[33];
+
+	char mdString[33];
     int r, i;
 
     r = MD5_Init(&c);
@@ -174,11 +176,14 @@ void exp1_send_401(int sock, exp1_info_type *info)
 
 /*Digest認証の実装*/
 void parse_char(char *line,char *res,char start,char end) {
-    if (line == NULL) {
+  int i=0;
+  int j=0;
+
+	if (line == NULL) {
         printf("not status\n");
         return;
     }
-    int i=0,j=0;
+    
     while (line[i] != start) {i++;}
     i++;
     while (line[i] != end){
@@ -190,7 +195,7 @@ void parse_char(char *line,char *res,char start,char end) {
 void input_md5(char *pass ,exp1_info_type *info){
     char line[64];
     char *point = pass;
-	printf("Digest_data : %s\n\n",pass);
+	/*printf("Digest_data : %s\n\n",pass);*/
     Digest_data *data = malloc(sizeof(Digest_data));
      pass = strstr(pass,"username");
      parse_char(pass,line,'\"','\"');
@@ -255,14 +260,14 @@ int digest_path(Digest_data *digest){
 	ret = fgets(buf,64,fp);
 	while (ret != NULL) {
 		strtok(buf,"\r\n");;
-		//A1 = ユーザ名 ":" realm ":" パスワード
+		/*A1 = ユーザ名 ":" realm ":" パスワード*/
 	    strcpy(A1,get_md5(buf));
 
-	    //A2 = HTTPのメソッド ":" コンテンツのURI
+	    /*A2 = HTTPのメソッド ":" コンテンツのURI*/
 	    sprintf(buf,"GET:%s",digest->uri);
 	    strcpy(A2,get_md5(buf));
 
-	    //response = MD5( MD5(A1) ":" nonce ":" nc ":" cnonce ":" qop ":" MD5(A2) )
+	    /*response = MD5( MD5(A1) ":" nonce ":" nc ":" cnonce ":" qop ":" MD5(A2) )*/
 	    sprintf(buf,"%s:%s:%s:%s:auth:%s",A1,digest->nonce,digest->nc,digest->cnonce,A2);
 	    strcpy(response,get_md5(buf));
 
@@ -398,7 +403,7 @@ void exp1_http_reply(int sock, exp1_info_type *info)
 
   if(strcmp(info->type,"text/php") == 0){
 	  if (strcmp(info->cmd,"POST")==0){
-  		//使ってないからbufを使いましょう
+  		/*使ってないからbufを使いましょう*/
 		sprintf(buf,"echo $%s=\"%s\"","POST_STR",info->post);
 	  	setenv("POST_STR",info->post,1);
   	}
@@ -571,7 +576,7 @@ void exp1_check_file(exp1_info_type *info)
   }else if(pext != NULL && strcmp(pext, ".jpg") == 0){
     strcpy(info->type, "image/jpeg");
   }else if(pext != NULL && strcmp(pext, ".php") == 0){
-    strcpy(info->type,"text/php");//phpのままだとダウンロードされる
+    strcpy(info->type,"text/php");/*phpのままだとダウンロードされる*/
   }else if(pext != NULL && strcmp(pext, ".mp4") == 0){
     strcpy(info->type, "video/mp4");
   }else if(pext != NULL && strcmp(pext, ".png") == 0){

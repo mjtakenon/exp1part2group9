@@ -16,7 +16,7 @@ if (isset($_POST['age'])) {
     $age = $_POST['age'];
 }
 $hash = md5($name . $age);
-$hash = hexdec($hash)/10**35%10;
+$hash = pow(hexdec($hash)/10,35)%10;
 
 if ($omikuzi) {
     echo $name."さん:".$age."歳!!\n";
