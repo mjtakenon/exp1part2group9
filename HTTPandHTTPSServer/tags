@@ -1,0 +1,57 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+CC	Makefile	/^CC      = gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS  = -pg -c -pedantic-errors -O3 -Wall$/;"	m
+CSRCS	Makefile	/^CSRCS   = exp1_https.c exp1_tcp_listen.c exp1_https_session.c exp1_parse_header.c exp1_parse_status.c exp1_check_file.c exp1_https_reply.c exp1_send_404.c exp1_send_file.c myssl_tls.c$/;"	m
+EXP1HTTPSCONTENTTYPESIZE	exp1_https.h	/^	EXP1HTTPSCONTENTTYPESIZE   = 64,$/;"	e	enum:__anon1
+EXP1HTTPSETHERNETLANMSS	exp1_https.h	/^	EXP1HTTPSETHERNETLANMSS    = 1460$/;"	e	enum:__anon1
+EXP1HTTPSHEADERSIZE	exp1_https.h	/^	EXP1HTTPSHEADERSIZE        = 16384,$/;"	e	enum:__anon1
+EXP1HTTPSMETHODSIZE	exp1_https.h	/^	EXP1HTTPSMETHODSIZE        = 64,$/;"	e	enum:__anon1
+EXP1HTTPSREALPATHSIZE	exp1_https.h	/^	EXP1HTTPSREALPATHSIZE      = 256,$/;"	e	enum:__anon1
+EXP1HTTPSSESSIONBUFSIZE	exp1_https.h	/^	EXP1HTTPSSESSIONBUFSIZE    = 2048,$/;"	e	enum:__anon1
+EXP1HTTPSSTATUSSIZE	exp1_https.h	/^	EXP1HTTPSSTATUSSIZE        = 1024,$/;"	e	enum:__anon1
+EXP1HTTPSURIPATHSIZE	exp1_https.h	/^	EXP1HTTPSURIPATHSIZE       = 256,$/;"	e	enum:__anon1
+LD	Makefile	/^LD      = gcc$/;"	m
+LDFLAGS	Makefile	/^LDFLAGS = -pg -o $(PROGRAM)$/;"	m
+LIBS	Makefile	/^LIBS    = -lssl -lcrypto$/;"	m
+MYCRTFILE	exp1_https.c	/^static const char *MYCRTFILE = "cert2.crt";$/;"	v	file:
+MYKEYFILE	exp1_https.c	/^static const char *MYKEYFILE = "cert2.key";$/;"	v	file:
+OBJS	Makefile	/^OBJS    = $(CSRCS:.c=.o)$/;"	m
+PROGRAM	Makefile	/^PROGRAM = exp1_https$/;"	m
+SSLTLSTYPE	myssl_tls.h	/^enum SSLTLSTYPE{$/;"	g
+SSL_TLS_CLIENT	myssl_tls.h	/^	SSL_TLS_CLIENT$/;"	e	enum:SSLTLSTYPE
+SSL_TLS_SERVER	myssl_tls.h	/^	SSL_TLS_SERVER,$/;"	e	enum:SSLTLSTYPE
+__EXP1_HTTP_H__	exp1_https.h	2;"	d
+__EXP1_H__	exp1.h	2;"	d
+__MYSSL_TLS__	myssl_tls.h	2;"	d
+cmd	exp1_https.h	/^	char cmd[EXP1HTTPSMETHODSIZE];$/;"	m	struct:__anon2
+code	exp1_https.h	/^	int code;$/;"	m	struct:__anon2
+ctx	exp1_https.c	/^SSL_CTX *ctx;$/;"	v
+data	html/parse_flickr.php	/^$data = json_decode(file_get_contents("photos002.json"));$/;"	v
+exp1_check_file	exp1_check_file.c	/^void exp1_check_file(exp1_info_type *info){$/;"	f
+exp1_https_reply	exp1_https_reply.c	/^void exp1_https_reply(SSL *ssl, exp1_info_type *info){$/;"	f
+exp1_https_session	exp1_https_session.c	/^int exp1_https_session(SSL *ssl){$/;"	f
+exp1_info_type	exp1_https.h	/^} exp1_info_type;$/;"	t	typeref:struct:__anon2
+exp1_parse_header	exp1_parse_header.c	/^int exp1_parse_header(char *buf, int size, exp1_info_type *info){$/;"	f
+exp1_parse_status	exp1_parse_status.c	/^void exp1_parse_status(char *status, exp1_info_type *pinfo){$/;"	f
+exp1_send_404	exp1_send_404.c	/^void exp1_send_404(SSL *ssl){$/;"	f
+exp1_send_file	exp1_send_file.c	/^void exp1_send_file(SSL *ssl, char *filename){$/;"	f
+exp1_tcp_listen	exp1_tcp_listen.c	/^int exp1_tcp_listen(int port){$/;"	f
+files	html/makehtml.php	/^$files = glob("*.jpg");$/;"	v
+files	html/numberling.php	/^$files = glob("*.jpg");$/;"	v
+i	html/numberling.php	/^$i = 0;$/;"	v
+init_and_set_CTX	myssl_tls.c	/^SSL_CTX *init_and_set_CTX(enum SSLTLSTYPE type){$/;"	f
+main	exp1_https.c	/^int main(int argc, char **argv){$/;"	f
+openssl_exit_message	myssl_tls.c	/^void openssl_exit_message(void){$/;"	f
+path	exp1_https.h	/^	char path[EXP1HTTPSURIPATHSIZE];$/;"	m	struct:__anon2
+photos	html/parse_flickr.php	/^$photos = $data->photos->photo;$/;"	v
+real_path	exp1_https.h	/^	char real_path[EXP1HTTPSREALPATHSIZE];$/;"	m	struct:__anon2
+set_crt_and_key	myssl_tls.c	/^void set_crt_and_key(SSL_CTX *ctx, const char *crtFile, const char *keyFile){$/;"	f
+show_crts	myssl_tls.c	/^void show_crts(SSL *ssl){$/;"	f
+size	exp1_https.h	/^	int size;$/;"	m	struct:__anon2
+to_file	html/numberling.php	/^  $to_file = sprintf("%03d.jpg", $i);$/;"	v
+type	exp1_https.h	/^	char type[EXP1HTTPSCONTENTTYPESIZE];$/;"	m	struct:__anon2
