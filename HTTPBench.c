@@ -198,6 +198,7 @@ int main(int argc, char** argv)
     }
   }
   srand(0);
+  start_time = gettimeofday_sec();
   for(i = 0; i < num; i++){
     for(j = 0; j < ps_num; j++){
       int fileid = rand() % 100;
@@ -206,8 +207,7 @@ int main(int argc, char** argv)
       /*data[i][j]->start = gettimeofday_sec();*/
       data[i][j]->ps_num = ps_num;
       data[i][j]->is_error = 0;
-    }
-    start_time = gettimeofday_sec();
+    }  
     pthread_create(&th[i], NULL, exp1_eval_thread, data[i]);
   }
 
@@ -225,7 +225,7 @@ int main(int argc, char** argv)
       tcp_average += (data[i][j]->tcp_end - data[i][j]->start);
       http_average += (data[i][j]->http_end - data[i][j]->start);
       if(data[i][j]->end >= total_max){
-	total_max = data[i][j]->end;
+		total_max = data[i][j]->end;
       }
     }
   }
