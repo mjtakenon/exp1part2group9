@@ -5,10 +5,23 @@
         <title>おしゃべりできたらいいな～</title>
         <script type="text/javascript">
             var ws;
+            var histry;
+            var text;
             function initws(){
-                ws = new WebSocket("ws://192.168.0.200:15044");
-                ws.onopen = onOpen;
-                ws.onerror = onError;
+                if (!ws) {
+                    ws = new WebSocket("ws://192.168.0.200:15044");
+                    ws.onopen = onOpen;
+                    ws.onerror = onError;
+                    ws.onmessage = onMessage;
+                    ws.onclose = onClose;
+                    var button = document.getElementById('start');
+                    button.value = "おしゃべり終了?";
+                }else {
+                    ws.close();
+                    ws = null;
+                    var button = document.getElementById('start');
+                    button.value = "おしゃべり開始?";
+                }
             }
             function onOpen(event){
                 console.log("つないだよ");
@@ -20,19 +33,39 @@
                 console.log("しまっちゃおうねー");
             }
             function onMessage(event){
-                console.log("おいなんか受け取ったぞ\n");
+                console.log("おいなんか受け取ったぞ");
                 console.log("event" + event);
                 console.log("data" + event.data);
+                makehist("相手",event.data);
+            }
+            function sendMessage(){
+                if (!text) {
+                    text = document.getElementById('talk');
+                }
+                if (ws && text.value) {
+                        makehist('自分',text.value);
+                        ws.send(text.value);
+                }
+                text.value = "";
+            }
+            function makehist(who,text){
+                if (!histry){
+                    histry = document.getElementById('rireki');
+                }
+                var p = document.createElement('p');
+                p.textContent = who +' : '+ text;
+                histry.insertBefore(p,histry.firstChild);
             }
         </script>
     </head>
     <body>
         <h1>なんかおしゃべりしようぜー</h1>
         <form>
-            <input type="button" name="talkbutton" value="おしゃべり開始?" onclick="initws()">
-            <input type="text">
-        </form>
+            <input type="button" id="start" name="talkbutton" value="おしゃべり開始?" onclick="initws()">
+            <input type="text" id="talk"><br>
+            <input type="button" name="sentbutton" value="送る" onclick="sendMessage()">
+        </form><img src="serval.jpg">
         <h2>履歴じゃないかな?</h2>
-        <div name="rireki"></div>
+        <b><div name="rireki" id="rireki"></div></b>
     </body>
 </html>
