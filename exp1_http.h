@@ -22,9 +22,10 @@ typedef struct
   char auth[256];
   char post[256];
   Digest_data *digest;
+  /*WebSocket用*/
+  char wskey[64];
 } exp1_info_type;
 
 int exp1_tcp_listen(int port);
 int exp1_tcp_connect(const char *hostname, int port);
 double gettimeofday_sec();
-
