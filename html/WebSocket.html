@@ -2,14 +2,17 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>おしゃべりできたらいいな～</title>
+        <title>すしざんまい</title>
         <script type="text/javascript">
             var ws;
             var histry;
             var text;
             function initws(){
                 if (!ws) {
-                    ws = new WebSocket("ws://192.168.0.200:15044");
+                    hostname = window.location.href.split("/");
+                    var host = "ws://" + hostname[2];
+                    
+                    ws = new WebSocket(host);
                     ws.onopen = onOpen;
                     ws.onerror = onError;
                     ws.onmessage = onMessage;
@@ -59,7 +62,7 @@
         </script>
     </head>
     <body>
-        <h1>なんかおしゃべりしようぜー</h1>
+        <h1>さーばーんなちほーへようこそ</h1>
         <form>
             <input type="button" id="start" name="talkbutton" value="おしゃべり開始?" onclick="initws()">
             <input type="text" id="talk"><br>
